@@ -27,18 +27,24 @@ function isAccessibilityAlert(anAlert) {
 
 function isGreenLine(anAlert) {
   return anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Green Line") >= 0));
-  
-  
+}
+
+function isTimelyAlert(anAlert) {
+  var alertDate = anAlert.last_modified_dt * 1000;
+  var nowDate = new Date().getTime();
+  console.log(alertDate + ' - ' + nowDate);
+  return nowDate - alertDate <= 60 * 60 * 24; // Alert has been modified in last day.
 }
 
 function eachAlert(anAlert) {
-  if (isAccessibilityAlert(anAlert) || !isGreenLine(anAlert)) {
+  if (isAccessibilityAlert(anAlert) || !isGreenLine(anAlert) || !isTimelyAlert(anAlert)) {
     return null;
   }
   
+  var alertDate = new Date(anAlert.last_modified_dt * 1000);
   return {
     "uid": anAlert.alert_id,
-    "updateDate": "2016-05-23T22:34:51.0Z",
+    "updateDate": alertDate.toJSON(),
     "titleText": "Green Line MBTA Service Update",
     "mainText": anAlert.header_text
   };
@@ -60,10 +66,11 @@ app.get("/", function(req, resp) {
   
       // If no alerts, add an item that all is good
       if (!alertItems.length) {
+        var now = new Date();
         alertItems.push(
           {
             "uid": 0,
-            "updateDate": "2016-05-23T22:34:51.0Z",
+            "updateDate": now.toJSON(),
             "titleText": "Green Line MBTA Service Update",
             "mainText": "All trains are running normally."
           });
