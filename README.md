@@ -1,27 +1,12 @@
-Welcome to the Gomix BETA
+MBTA Alerts to Alexa Flash Report format
 =========================
 
-Click `"Show"` in the header to see your app live. Updates to your code will instantly deploy and update live.
+I bought an Amazon Alexa and wanted to play with adding skills to it.
 
-Gomix is a developer playground that lets you code a real web-app without the slow setup and deployment steps.
+In reading the documentation, the flash report was a nice and quick way to do it.  I created a skill on the alexa for reading out alerts on the MBTA.  This project calls the alert api from the MBTA and converts the alerts into the format that Amazon Alexa uses.  It's basically a simple transformer with a DB cache (using sqlite).
 
-[About Gomix](https://gomix.com/about)
+Enjoy and modify as you see fit.
 
-
-Your Project
-------------
-
-On the back-end,
-- your app starts at `server.js`
-- add frameworks and packages in `package.json`
-- safely store app secrets in `.env`
-
-On the front-end,
-- edit `client.js`, `style.css` and `index.html`
-- drag in `assets`, like images or music, to add them to your project
+[Running on Gomix](https://shaky-rake.gomix.me/)
 
 
-Made by Fog Creek
------------------
-
-\ ゜o゜)ノ
