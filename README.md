@@ -15,4 +15,3 @@ In action:
 - [Blue Line Alerts](https://shaky-rake.gomix.me/blue)
 - [Silver Line Alerts](https://shaky-rake.gomix.me/silver)
 
-

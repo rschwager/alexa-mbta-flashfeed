@@ -53,6 +53,9 @@ sequelize.authenticate()
       updateDate: {
         type: Sequelize.DATE
       },
+      lastSeenDate: {
+        type: Sequelize.DATE
+      },
       titleText: {
         type: Sequelize.TEXT
       },
@@ -128,9 +131,11 @@ function eachAlert(anAlert) {
     return null;
   
   var alertDate = new Date(anAlert.last_modified_dt * 1000);
+  var nowDate = new Date();
   var newAlert = {
     "uid": anAlert.alert_id,
     "updateDate": alertDate.toJSON(),
+    "lastSeenDate": nowDate.toJSON(),
     "titleText": "MBTA Service Update",
     "green": lineInfo.green,
     "red": lineInfo.red,
@@ -166,6 +171,9 @@ app.get("/:line", function(req, resp) {
   var options = {};
   options.where = {};
   options.where[line] = true;
+  var d = new Date();
+  d.setHours(d.getHours() - 2);
+  options.where['lastSeenDate'] = { $gte: d }; 
   console.log(options);  
   Alert.findAll(options).then(function(alertItems) {
       line = line.charAt(0).toUpperCase() + line.substr(1).toLowerCase();
