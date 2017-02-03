@@ -7,6 +7,11 @@ In reading the documentation, the flash report was a nice and quick way to do it
 
 Enjoy and modify as you see fit.
 
-[Running on Gomix](https://shaky-rake.gomix.me/)
+In action:
 
+- [Green Line Alerts](https://shaky-rake.gomix.me/green)
+- [Orange Line Alerts](https://shaky-rake.gomix.me/orange)
+- [Red Line Alerts](https://shaky-rake.gomix.me/red)
+- [Blue Line Alerts](https://shaky-rake.gomix.me/blue)
+- [Silver Line Alerts](https://shaky-rake.gomix.me/silver)
 
