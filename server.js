@@ -157,7 +157,7 @@ app.get("/:line", function(req, resp) {
   var now = new Date();
   
   // Bad Parameter.  Return a message saying such.
-  if (line !== "green" && line !== "red" && line !== "orange" && line !== "red" && line !== "silver") {
+  if (line !== "green" && line !== "red" && line !== "blue" && line !== "orange" && line !== "silver") {
     resp.send({
             "uid": 1,
             "updateDate": now.toJSON(),
