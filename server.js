@@ -7,13 +7,14 @@ var Sequelize = require('sequelize');
 var express = require('express');
 var app = express();
 
-app.use(express.static('public'));
+const Op = Sequelize.Op;
 
+app.use(express.static('public'));
 var params = {
   qs: {
-    api_key: "hDT9Pj7DkE-onZX3MOzO9g"
+    api_key: "e3ef25867ab24888b83cae3a1105a5a8"
   },
-  url: 'http://realtime.mbta.com/developer/api/v2/alerts',
+  url: 'https://api-v3.mbta.com/alerts',
   json: true
 };
 
@@ -33,6 +34,7 @@ var sequelize = new Sequelize('database', process.env.DB_USER, process.env.DB_PA
     min: 0,
     idle: 10000
   },
+  operatorsAliases: false,
     // GoMix implementation Note:
     // Security note: the database is saved to the file `database.sqlite` on the local filesystem. It's deliberately placed in the `.data` directory
     // which doesn't get copied if someone remixes the project.
@@ -79,7 +81,6 @@ sequelize.authenticate()
       }
 
     });
-    
     setup();
   })
   .catch(function (err) {
@@ -92,16 +93,16 @@ function setup(){
 }
 
 function isAccessibilityAlert(anAlert) {
-  var headerText = anAlert.header_text;
+  var headerText = anAlert.attributes.header;
   return /elevator/.test(headerText.toLowerCase()) || /escalator/.test(headerText.toLowerCase());
 }
 
 function getLineInformation(anAlert) {
-  var greenLine = anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Green Line") >= 0));
-  var redLine = anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Red Line") >= 0));
-  var blueLine = anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Blue Line") >= 0));
-  var orangeLine = anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Orange Line") >= 0));
-  var silverLine = anAlert.affected_services.services.some(x => (x.route_name && x.route_name.indexOf("Silver Line") >= 0));
+  var greenLine = anAlert.attributes.informed_entity.some(x => (x.route && x.route.indexOf("Green") >= 0));
+  var redLine = anAlert.attributes.informed_entity.some(x => (x.route && x.route.indexOf("Red") >= 0));
+  var blueLine = anAlert.attributes.informed_entity.some(x => (x.route && x.route.indexOf("Blue") >= 0));
+  var orangeLine = anAlert.attributes.informed_entity.some(x => (x.route && x.route.indexOf("Orange") >= 0));
+  var silverLine = anAlert.attributes.informed_entity.some(x => (x.route && x.route.indexOf("Silver") >= 0));
   
   return {
     hasMatch: greenLine || redLine || blueLine || orangeLine || silverLine,
@@ -114,7 +115,7 @@ function getLineInformation(anAlert) {
 }
 
 function isTimelyAlert(anAlert) {
-  var alertDate = anAlert.last_modified_dt * 1000;
+  var alertDate = new Date(anAlert.attributes.updated_at);
   var nowDate = new Date().getTime();
   var ageInMinutes = (nowDate - alertDate) / 1000 / 60;
   console.log("Alert Age: " + ageInMinutes + " minutes");
@@ -130,10 +131,10 @@ function eachAlert(anAlert) {
   if (!lineInfo || !lineInfo.hasMatch)
     return null;
   
-  var alertDate = new Date(anAlert.last_modified_dt * 1000);
+  var alertDate = new Date(anAlert.attributes.updated_at);
   var nowDate = new Date();
   var newAlert = {
-    "uid": anAlert.alert_id,
+    "uid": anAlert.id,
     "updateDate": alertDate.toJSON(),
     "lastSeenDate": nowDate.toJSON(),
     "titleText": "MBTA Service Update",
@@ -142,7 +143,7 @@ function eachAlert(anAlert) {
     "blue": lineInfo.blue,
     "silver": lineInfo.silver,
     "orange": lineInfo.orange,
-    "mainText": anAlert.header_text
+    "mainText": anAlert.attributes.header
   };
   console.log(newAlert);
   
@@ -172,12 +173,11 @@ app.get("/:line", function(req, resp) {
   options.where = {};
   options.where[line] = true;
   var d = new Date();
-  d.setHours(d.getHours() - 2);
-  options.where['lastSeenDate'] = { $gte: d }; 
+  d.setHours(d.getHours() - 3);
+  options.where['lastSeenDate'] = { [Sequelize.Op.gte]: d }; 
   console.log(options);  
   Alert.findAll(options).then(function(alertItems) {
       line = line.charAt(0).toUpperCase() + line.substr(1).toLowerCase();
-
       // If no alerts, add an item that all is good
       if (!alertItems.length) {
         retItems.push(
@@ -244,8 +244,8 @@ function getAlertsFromMBTA() {
       console.log(err.stack);
       console.log(err);
     } 
-    else if (body && body.alerts) {
-      body.alerts.forEach(function(anAlert) {
+    else if (body && body.data) {
+      body.data.forEach(function(anAlert) {
         var alertResp = eachAlert(anAlert);
         if (alertResp)
            alertItems.push(alertResp);
